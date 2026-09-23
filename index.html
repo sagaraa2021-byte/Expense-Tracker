@@ -3,154 +3,101 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Cuaca</title>
+<title>Pencatat Pengeluaran</title>
 <style>
   :root{
-    --sky:#1b2a4a; --sky-deep:#0d1730; --cloud:#e8edf7;
-    --sun:#f4b942; --line:#2b3c63; --dim:#8593b8;
+    --bg:#FAFAF8; --card:#fff; --line:#E4E1DA; --ink:#22221F; --sub:#7A7770;
+    --green:#3F7D57; --red:#B4402A;
   }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --bg:#191917; --card:#232320; --line:#37372F; --ink:#EDECE7; --sub:#9C998F; }
+  }
+  :root[data-theme="dark"]{ --bg:#191917; --card:#232320; --line:#37372F; --ink:#EDECE7; --sub:#9C998F; }
   *{box-sizing:border-box;}
-  html,body{height:100%;}
-  body{
-    margin:0; min-height:100%;
-    background: linear-gradient(180deg, var(--sky) 0%, var(--sky-deep) 100%);
-    font-family:-apple-system,'Segoe UI',Roboto,sans-serif;
-    color:var(--cloud);
-    display:flex; justify-content:center;
-    padding: 28px 14px;
-    padding-top: calc(28px + env(safe-area-inset-top,0px));
-    padding-bottom: calc(28px + env(safe-area-inset-bottom,0px));
-  }
-  .wrap{ width:100%; max-width:420px; }
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .wrap{max-width:480px; margin:0 auto; padding:28px 18px 60px;}
+  h1{font-size:1.3rem; margin:0 0 20px;}
 
-  select{
-    width:100%; background:#16233f; color:var(--cloud);
-    border:1px solid var(--line); border-radius:12px;
-    padding:12px 14px; font-size:15px; margin-bottom:18px; outline:none;
-  }
+  .balance{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; text-align:center; margin-bottom:16px;}
+  .balance .label{font-size:.75rem; color:var(--sub); margin-bottom:6px;}
+  .balance .value{font-size:2rem; font-weight:700;}
 
-  .hero{
-    background: linear-gradient(155deg,#213768 0%,#152548 100%);
-    border:1px solid var(--line); border-radius:20px;
-    padding:28px 24px; text-align:center; position:relative; overflow:hidden;
-  }
-  .hero::after{
-    content:""; position:absolute; right:-30px; top:-30px;
-    width:130px;height:130px;border-radius:50%;
-    background:radial-gradient(circle,#f4b94222 0%,transparent 70%);
-  }
-  .city{ font-size:15px; color:var(--dim); margin:0 0 2px 0; }
-  .temp{ font-size:56px; font-weight:600; margin:6px 0; font-variant-numeric:tabular-nums; }
-  .cond{ font-size:15px; color:var(--dim); margin:0; }
-  .icon{ margin: 8px auto 4px auto; width:64px; height:64px; }
+  form{display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap;}
+  input{flex:1; min-width:100px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--ink); font-size:.95rem;}
+  select{padding:10px 8px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--ink); font-size:.95rem;}
+  button{padding:10px 16px; border:none; border-radius:8px; background:var(--ink); color:var(--bg); font-weight:600; font-size:.9rem; cursor:pointer;}
 
-  .stats{
-    display:grid; grid-template-columns:1fr 1fr 1fr;
-    gap:10px; margin:18px 0;
-  }
-  .stat{
-    background:#16233f; border:1px solid var(--line); border-radius:12px;
-    padding:12px 8px; text-align:center;
-  }
-  .stat .v{ font-size:16px; font-weight:600; }
-  .stat .l{ font-size:11px; color:var(--dim); margin-top:2px; }
-
-  .fc-title{ font-size:13px; color:var(--dim); margin:20px 0 10px 4px; }
-  .fc-list{ display:flex; flex-direction:column; gap:8px; }
-  .fc-row{
-    display:flex; align-items:center; justify-content:space-between;
-    background:#16233f; border:1px solid var(--line); border-radius:12px;
-    padding:10px 16px;
-  }
-  .fc-day{ font-size:14px; width:80px; }
-  .fc-mini{ width:26px; height:26px; }
-  .fc-range{ font-size:14px; font-variant-numeric:tabular-nums; color:var(--dim); }
-  .fc-range b{ color:var(--cloud); }
+  ul{list-style:none; padding:0; margin:0;}
+  li{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 4px; border-bottom:1px solid var(--line);}
+  .amt.expense{color:var(--red);} .amt.income{color:var(--green);}
+  li button{background:none; color:var(--sub); font-weight:400; padding:4px 6px; font-size:1rem;}
+  .empty{text-align:center; color:var(--sub); padding:30px 0; font-size:.9rem;}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <h1>Pencatat Pengeluaran</h1>
 
-  <select id="citySelect">
-    <option value="Jakarta">Jakarta</option>
-    <option value="Bandung">Bandung</option>
-    <option value="Surabaya">Surabaya</option>
-    <option value="Yogyakarta">Yogyakarta</option>
-    <option value="Denpasar">Denpasar</option>
-  </select>
-
-  <div class="hero">
-    <p class="city" id="cityName">Jakarta</p>
-    <div class="icon" id="mainIcon"></div>
-    <p class="temp" id="mainTemp">--&deg;</p>
-    <p class="cond" id="mainCond">--</p>
+  <div class="balance">
+    <div class="label">Saldo</div>
+    <div class="value" id="balance">Rp 0</div>
   </div>
 
-  <div class="stats">
-    <div class="stat"><div class="v" id="humidity">--%</div><div class="l">Kelembapan</div></div>
-    <div class="stat"><div class="v" id="wind">-- km/j</div><div class="l">Angin</div></div>
-    <div class="stat"><div class="v" id="uv">--</div><div class="l">Indeks UV</div></div>
-  </div>
+  <form id="form">
+    <input id="desc" type="text" placeholder="Keterangan" required>
+    <input id="amount" type="number" min="0" placeholder="Jumlah" required>
+    <select id="type">
+      <option value="expense">Keluar</option>
+      <option value="income">Masuk</option>
+    </select>
+    <button type="submit">Tambah</button>
+  </form>
 
-  <p class="fc-title">5 Hari ke Depan</p>
-  <div class="fc-list" id="fcList"></div>
-
+  <ul id="list"></ul>
 </div>
 
 <script>
-  const data = {
-    Jakarta:   { cond:'Cerah Berawan',  temp:31, hum:68, wind:14, uv:7, seed:1 },
-    Bandung:   { cond:'Berawan',        temp:23, hum:74, wind:9,  uv:4, seed:2 },
-    Surabaya:  { cond:'Panas Terik',    temp:34, hum:55, wind:11, uv:9, seed:3 },
-    Yogyakarta:{ cond:'Hujan Ringan',   temp:26, hum:82, wind:13, uv:3, seed:4 },
-    Denpasar:  { cond:'Cerah',          temp:30, hum:64, wind:16, uv:8, seed:5 },
-  };
-  const days = ['Sel','Rab','Kam','Jum','Sab'];
+  const KEY = 'expense-tracker-simple';
+  let items = JSON.parse(localStorage.getItem(KEY) || '[]');
 
-  function icon(kind, size){
-    const s = size;
-    if (kind === 'sun') return `<svg width="${s}" height="${s}" viewBox="0 0 64 64"><circle cx="32" cy="32" r="14" fill="#f4b942"/></svg>`;
-    if (kind === 'cloud') return `<svg width="${s}" height="${s}" viewBox="0 0 64 64"><ellipse cx="32" cy="38" rx="20" ry="12" fill="#c7d2ea"/><circle cx="24" cy="30" r="11" fill="#e8edf7"/><circle cx="38" cy="28" r="13" fill="#e8edf7"/></svg>`;
-    if (kind === 'rain') return `<svg width="${s}" height="${s}" viewBox="0 0 64 64"><ellipse cx="32" cy="26" rx="18" ry="11" fill="#9fb0d6"/><line x1="22" y1="42" x2="18" y2="54" stroke="#6f8cd6" stroke-width="3" stroke-linecap="round"/><line x1="32" y1="42" x2="28" y2="54" stroke="#6f8cd6" stroke-width="3" stroke-linecap="round"/><line x1="42" y1="42" x2="38" y2="54" stroke="#6f8cd6" stroke-width="3" stroke-linecap="round"/></svg>`;
-    return `<svg width="${s}" height="${s}" viewBox="0 0 64 64"><circle cx="24" cy="34" r="10" fill="#f4b942"/><ellipse cx="38" cy="36" rx="16" ry="10" fill="#c7d2ea"/></svg>`;
-  }
-  function kindFor(cond){
-    if (cond.includes('Hujan')) return 'rain';
-    if (cond.includes('Cerah Berawan')) return 'partly';
-    if (cond.includes('Cerah') || cond.includes('Panas')) return 'sun';
-    return 'cloud';
-  }
+  const idr = n => 'Rp ' + Math.round(n).toLocaleString('id-ID');
+  const save = () => localStorage.setItem(KEY, JSON.stringify(items));
 
-  function seededRange(seed, dayIdx, base){
-    const n = Math.sin(seed * 99 + dayIdx * 17) * 10000;
-    const frac = n - Math.floor(n);
-    return Math.round(base - 4 + frac * 6);
+  function render(){
+    const total = items.reduce((a,b)=> a + (b.type==='income'? b.amount : -b.amount), 0);
+    document.getElementById('balance').textContent = idr(total);
+
+    const list = document.getElementById('list');
+    list.innerHTML = items.length === 0
+      ? '<div class="empty">Belum ada transaksi</div>'
+      : items.slice().reverse().map(i => `
+        <li>
+          <span>${i.desc}</span>
+          <span class="amt ${i.type}">${i.type==='expense'?'-':'+'}${idr(i.amount)}</span>
+          <button data-id="${i.id}">✕</button>
+        </li>
+      `).join('');
   }
 
-  function render(city){
-    const d = data[city];
-    document.getElementById('cityName').textContent = city;
-    document.getElementById('mainTemp').textContent = d.temp + '\u00b0';
-    document.getElementById('mainCond').textContent = d.cond;
-    document.getElementById('mainIcon').innerHTML = icon(kindFor(d.cond), 64);
-    document.getElementById('humidity').textContent = d.hum + '%';
-    document.getElementById('wind').textContent = d.wind + ' km/j';
-    document.getElementById('uv').textContent = d.uv;
+  document.getElementById('form').addEventListener('submit', e => {
+    e.preventDefault();
+    const desc = document.getElementById('desc').value.trim();
+    const amount = parseFloat(document.getElementById('amount').value);
+    const type = document.getElementById('type').value;
+    if(!desc || !amount || amount <= 0) return;
+    items.push({ id: Date.now(), desc, amount, type });
+    save(); render();
+    e.target.reset();
+  });
 
-    const kinds = ['sun','cloud','rain','partly','sun'];
-    document.getElementById('fcList').innerHTML = days.map((day, i) => {
-      const lo = seededRange(d.seed, i, d.temp) - 6;
-      const hi = seededRange(d.seed, i, d.temp);
-      return `<div class="fc-row">
-        <span class="fc-day">${day}</span>
-        <span class="fc-mini">${icon(kinds[i], 26)}</span>
-        <span class="fc-range">${lo}&deg; <b>${hi}&deg;</b></span>
-      </div>`;
-    }).join('');
-  }
+  document.getElementById('list').addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if(!btn) return;
+    items = items.filter(i => i.id !== Number(btn.dataset.id));
+    save(); render();
+  });
 
-  document.getElementById('citySelect').addEventListener('change', e => render(e.target.value));
-  render('Jakarta');
+  render();
 </script>
 </body>
 </html>
